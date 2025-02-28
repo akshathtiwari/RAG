@@ -8,10 +8,8 @@ from PIL import Image
 
 from dotenv import load_dotenv
 
-# Load environment variables (including GROQ_API_KEY) from .env file
 load_dotenv()
 
-# --- LangChain Community Imports ---
 from langchain_community.document_loaders import (
     PyPDFLoader, TextLoader, Docx2txtLoader, CSVLoader,
     MergedDataLoader, UnstructuredPowerPointLoader
@@ -23,12 +21,10 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 
-# --- Groq Chat LLM ---
 from langchain_groq import ChatGroq
 
 st.set_page_config(page_title="Chat with Docs + Groq")
 
-# --- Session State ---
 if "vector_store" not in st.session_state:
     st.session_state.vector_store = None
 if "processed_data" not in st.session_state:
@@ -38,10 +34,9 @@ if "data_ingested" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --- Tesseract Setup (optional) ---
 current_os = platform.system()
 if current_os == "Windows":
-    # Update if your Tesseract is in a non-default path
+    
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 elif current_os == "Linux":
     pass
@@ -49,9 +44,6 @@ else:
     st.error("Unsupported OS for Tesseract.")
     st.stop()
 
-# -------------------------------------------------------------------------
-#                          OCR & PDF Utilities
-# -------------------------------------------------------------------------
 def pil_image_to_numpy(pil_image):
     return np.array(pil_image)
 
@@ -83,9 +75,7 @@ def merge_files(pdf_documents, txt_file_path):
 
     return merged_text
 
-# -------------------------------------------------------------------------
-#                    Data Ingestion / Splitting
-# -------------------------------------------------------------------------
+
 def data_ingestion(uploaded_files):
     """Ingests files (PDF, txt, docx, csv, pptx), merges them, 
     splits into chunks, and returns a list of docs.
@@ -94,7 +84,7 @@ def data_ingestion(uploaded_files):
         st.error("No files to process.")
         return []
 
-    # Only ingest once per session
+    
     if not st.session_state.data_ingested:
         loaders = []
         with st.spinner("Processing data..."):
@@ -139,7 +129,7 @@ def data_ingestion(uploaded_files):
                 else:
                     st.warning(f"Unsupported file type: {uploaded_file.name}")
 
-            # Merge all loaders
+            # Merge loaders
             if loaders:
                 try:
                     loader_all = MergedDataLoader(loaders=loaders)
@@ -171,9 +161,7 @@ def data_ingestion(uploaded_files):
         st.error("No processed data available.")
         return []
 
-# -------------------------------------------------------------------------
-#                Embeddings / Vector Store (FAISS)
-# -------------------------------------------------------------------------
+
 def get_embeddings():
     """Uses a HuggingFace embedding model."""
     return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -191,23 +179,18 @@ def get_vector_store(docs):
             st.error(f"Vector store creation error: {e}")
     return st.session_state.vector_store
 
-# -------------------------------------------------------------------------
-#                  Groq LLM
-# -------------------------------------------------------------------------
+
 def get_groq_llm():
     """Returns an instance of ChatGroq. 
     Ensure GROQ_API_KEY is set in your environment or .env file."""
     llm = ChatGroq(
-        model="mixtral-8x7b-32768",  # Replace with your Groq model name
+        model="mixtral-8x7b-32768",  
         temperature=0.1,
         max_tokens=512,
         max_retries=2,
     )
     return llm
 
-# -------------------------------------------------------------------------
-#              Prompt Template & QA Helper
-# -------------------------------------------------------------------------
 prompt_template = """
 You are a helpful assistant that uses the following context to answer a question.
 If the context doesn't provide enough information, say "I don't know."
@@ -249,9 +232,6 @@ def trim_chat_history(max_length=20):
     if len(st.session_state.messages) > max_length:
         st.session_state.messages = st.session_state.messages[-max_length:]
 
-# -------------------------------------------------------------------------
-#                           MAIN APP
-# -------------------------------------------------------------------------
 def main():
     st.title("Chat with Documents (Groq Integration)")
 
@@ -267,35 +247,32 @@ def main():
             if docs:
                 get_vector_store(docs)
 
-    # Display existing chat
+    
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Chat input
+    
     user_question = st.chat_input("Ask a question about your documents...")
     if user_question:
         # Store user message
         st.session_state.messages.append({"role": "user", "content": user_question})
         with st.chat_message("user"):
             st.markdown(user_question)
-
-        # Check we have a vector store
+        
         if st.session_state.vector_store is None:
             st.error("No vector store found. Please upload and process files first.")
             return
-
-        # Create or reuse the Groq LLM
+        
         llm = get_groq_llm()
-
-        # Generate response
+        
         response = get_response_llm(llm, st.session_state.vector_store, user_question)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
         with st.chat_message("assistant"):
             st.markdown(response)
 
-        # Trim chat history if too long
+        
         trim_chat_history()
 
 if __name__ == "__main__":
