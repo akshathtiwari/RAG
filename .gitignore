@@ -1,0 +1,7 @@
+# .gitignore
+.env
+.vscode
+.venv
+
+faiss_index
+offload

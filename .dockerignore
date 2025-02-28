@@ -1,0 +1,30 @@
+# Ignore local Python venv
+.venv
+
+# IDE/Editor configs
+.vscode
+.idea
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts / caches
+.cache
+*.egg-info
+*.egg
+
+# Git
+.git
+.gitignore
+
+# FAISS index folder (if you don’t want to copy it into the container)
+faiss_index/
+
+# Hugging Face offload folder
+offload/
+
+# Possibly logs or other unneeded data
+*.log

@@ -1,0 +1,14 @@
+streamlit
+pdfplumber
+pytesseract
+Pillow
+langchain_community
+langchain
+numpy
+pypdf
+sentence-transformers
+transformers
+langchain
+langchain-groq
+unstructured
+faiss-gpu
