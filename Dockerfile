@@ -18,7 +18,7 @@ COPY . /app
 # 4) Install Python dependencies
 #    Make sure your requirements.txt is in your project folder
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install -r requirements.txt
 
 # 5) Expose the default Streamlit port
 EXPOSE 8501

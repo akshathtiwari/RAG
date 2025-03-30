@@ -11,4 +11,8 @@ transformers
 langchain
 langchain-groq
 unstructured
-faiss-gpu
+typing-extensions==4.13.0
+rapidocr-onnxruntime
+qdrant-client
+langchain-qdrant
+langchain-huggingface
